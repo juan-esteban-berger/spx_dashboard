@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: spx-streamlit-service
+spec:
+  selector:
+    app: spx-streamlit
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8081
+      nodePort: 30005
+  type: LoadBalancer

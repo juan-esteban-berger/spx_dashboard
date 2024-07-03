@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spx-streamlit-deployment
+  labels:
+    app: spx-streamlit
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spx-streamlit
+  template:
+    metadata:
+      labels:
+        app: spx-streamlit
+    spec:
+      hostNetwork: true
+      containers:
+        - name: spx-streamlit
+          image: juanestebanberger/spx_streamlit:latest
+          ports:
+            - containerPort: 8081
+          env:
+            - name: server
+              valueFrom:
+                secretKeyRef:
+                  name: spx-streamlit-server
+                  key: server
+            - name: port
+              valueFrom:
+                secretKeyRef:
+                  name: spx-streamlit-port
+                  key: port
+            - name: user
+              valueFrom:
+                secretKeyRef:
+                  name: spx-streamlit-user
+                  key: user
+            - name: password
+              valueFrom:
+                secretKeyRef:
+                  name: spx-streamlit-password
+                  key: password
+            - name: database
+              valueFrom:
+                secretKeyRef:
+                  name: spx-streamlit-database
+                  key: database
