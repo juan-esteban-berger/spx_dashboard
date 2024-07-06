@@ -16,3 +16,6 @@ export PORT=$port
 export USER=$user
 export PGPASSWORD=$password
 export DATABASE=$database
+
+# Set Google Cloud credentials
+export JSON_CREDS=$(jq -c . ~/Credentials/gdrive_credentials.json)
