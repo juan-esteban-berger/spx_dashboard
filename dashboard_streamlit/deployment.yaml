@@ -19,29 +19,29 @@ spec:
         - name: spx-streamlit
           image: juanestebanberger/spx_streamlit:latest
           ports:
-            - containerPort: 8081
+            - containerPort: 8501
           env:
-            - name: server
+            - name: HOST
               valueFrom:
                 secretKeyRef:
                   name: spx-streamlit-server
                   key: server
-            - name: port
+            - name: PORT
               valueFrom:
                 secretKeyRef:
                   name: spx-streamlit-port
                   key: port
-            - name: user
+            - name: USER
               valueFrom:
                 secretKeyRef:
                   name: spx-streamlit-user
                   key: user
-            - name: password
+            - name: PGPASSWORD
               valueFrom:
                 secretKeyRef:
                   name: spx-streamlit-password
                   key: password
-            - name: database
+            - name: DATABASE
               valueFrom:
                 secretKeyRef:
                   name: spx-streamlit-database

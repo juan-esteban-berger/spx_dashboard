@@ -2,190 +2,219 @@ import warnings
 warnings.filterwarnings('ignore')
 
 import os
+import psycopg2
 import pandas as pd
-import pymssql
 import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
-from datetime import datetime, timedelta
 
-########################################################################
-# Page Configuration
-# wide mode
+############################################################################
+# Page Configurations
 st.set_page_config(layout="wide",
                    initial_sidebar_state="collapsed")
 
 st.markdown("""
 <style>
-	[data-testid="stDecoration"] {
-		display: none;
-	}
+        [data-testid="stDecoration"] {
+                display: none;
+        }
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
 </style>""",
 unsafe_allow_html=True)
 
-########################################################################
+############################################################################
+# HTML Centered Title
+st.markdown('<h1 style="text-align: center;">S&P 500 Dashboard</h1>', unsafe_allow_html=True)
+
+############################################################################
 # Database Credentials
-server = os.getenv('server')
-port = os.getenv('port')
-user = os.getenv('user')
-password = os.getenv('password')
-database = os.getenv('database')
+host = os.getenv('HOST')
+port = os.getenv('PORT')
+user = os.getenv('USER')
+password = os.getenv('PGPASSWORD')
+database = os.getenv('DATABASE')
 
-def mssql(sql_query, server, user, password, database, port):
+# Remove trailing whitespace
+host = host.strip()
+port = port.strip()
+user = user.strip()
+password = password.strip()
+database = database.strip()
+
+############################################################################
+# PostgreSQL to Pandas DataFrame Function
+def postgresql(sql_query, host, user, password, database, port):
     # Connect to the database
-    conn = pymssql.connect(server, user, password, database, port=port,
-                           tds_version='7.0')
-    cursor = conn.cursor()
+    conn = psycopg2.connect(
+        host=host,
+        port=port,
+        user=user,
+        password=password,
+        dbname=database
+    )
 
-    # Execute the SQL query
-    cursor.execute(sql_query)
+    # Create a new cursor
+    cur = conn.cursor()
 
-    # Fetch data for SELECT queries
-    batch_size = 1000
-    rows = cursor.fetchmany(batch_size)
-    data = []
+    # Execute the query
+    cur.execute(sql_query)
 
-    while rows:
-        data.extend(rows)
-        rows = cursor.fetchmany(batch_size)
+    # Get the column names
+    colnames = [desc[0] for desc in cur.description]
 
-    # Load into a DataFrame
-    df = pd.DataFrame(data, columns=[desc[0] for desc in cursor.description])
+    # Fetch the data
+    data = cur.fetchall()
 
-   # Close the connection
-    cursor.close()
+    # Close the cursor
+    cur.close()
+
+    # Close the connection
     conn.close()
+
+    # Create a DataFrame
+    df = pd.DataFrame(data, columns=colnames)
 
     # Return DataFrame
     return df
 
-########################################################################
+############################################################################
 # Data Caching Functions
-
 # Get SPX Info
 @st.cache_data
-def get_spx_info(server, user, password, database, port):
+def get_spx_info(host, user, password, database, port):
     with st.spinner('Loading SPX Info...'):
-        query = "SELECT * FROM spx.info"
-        df_info = mssql(query, server, user, password, database, port)
-        # Rename Date_added to Date_Added
-        df_info = df_info.rename(columns={'Date_added': 'Date_Added'})
-        # Convert Date_Added to datetime
-        df_info['Date_Added'] = pd.to_datetime(df_info['Date_Added'])
+        query = "SELECT * FROM spx.info ORDER BY symbol"
+        df_info = postgresql(query, host, user, password, database, port)
+        # Convert founded to int
+        df_info['founded'] = df_info['founded'].astype(int)
+        # Convert cik to str
+        df_info['cik'] = df_info['cik'].astype(str)
         return df_info
 
-# Get SPX Prices
-@st.cache_data
-def get_spx_prices(symbol, server, user, password, database, port, metrics=['Close']):
-    with st.spinner('Loading SPX Prices...'):
-        query = f"SELECT * FROM spx.prices WHERE Ticker = '{symbol}' AND ("
-        for metric in metrics:
-            query += f"Metric = '{metric}' OR "
-        query = query[:-4] + ")"
-
-        df_prices = mssql(query, server, user, password, database, port)
+# Get SPX Prices                                                                     
+@st.cache_data                                                                        
+def get_spx_prices(symbols, host, user, password, database, port, metrics=['Close']):
+    with st.spinner('Loading SPX Prices...'):                                         
+        symbols_str = ", ".join(f"'{symbol}'" for symbol in symbols)
+        query = f"SELECT * FROM spx.prices WHERE Ticker IN ({symbols_str}) AND ("           
+        for metric in metrics:                                                        
+            query += f"Metric = '{metric}' OR "                                       
+        query = query[:-4] + ")"                                                      
+        df_prices = postgresql(query, host, user, password, database, port)           
+        df_prices['date'] = pd.to_datetime(df_prices['date'])                         
         return df_prices
 
 # Get SPX Financials
 @st.cache_data
-def get_spx_financials(server, user, password, database, port):
+def get_spx_financials(symbols, host, user, password, database, port):
     with st.spinner('Loading SPX Financials...'):
-        query = "SELECT * FROM spx.financials"
-        df_financials = mssql(query, server, user, password, database, port)
+        symbols_str = ", ".join(f"'{symbol}'" for symbol in symbols)
+        query = f"SELECT * FROM spx.financials WHERE ticker IN ({symbols_str})"
+        df_financials = postgresql(query, host, user, password, database, port)
+        df_financials['date'] = pd.to_datetime(df_financials['date'])
         return df_financials
 
-########################################################################
-# Title
-# H1 Centered HTML Title
-st.markdown("<h1 style='text-align: center;'>S&P 500 Stocks Analysis</h1>", unsafe_allow_html=True)
+############################################################################
+# Load SPX Info
+df_info = get_spx_info(host, user, password, database, port)
 
-########################################################################
-# Source SPX Info
-df_info = get_spx_info(server, user, password, database, port)
-
-########################################################################
+############################################################################
 # Create Filters
-col1, col2, col3, col4 = st.columns(4)
+col1, col2, col3, col4, = st.columns(4)
 
 with col1:
-    # Symbol Filter
-    symbols = st.multiselect('Select Symbols:', df_info['Symbol'].sort_values().unique())
-    # Headquarters_Location Filter
-    headquarters_locations = st.multiselect('Select Headquarters Locations:', df_info['Headquarters_Location'].sort_values().unique())
-
+    # Multi Select for gics_sector
+    sector = st.multiselect('Sector', df_info['gics_sector'].unique(), [])
 with col2:
-    # Security Filter
-    securities = st.multiselect('Select Securities:', df_info['Security'].sort_values().unique())
-    # Date_Added Filter (Date Range)
-    min_date_added = df_info['Date_Added'].min()
-    min_date_added = datetime(min_date_added.year, min_date_added.month, min_date_added.day)
-    max_date_added = df_info['Date_Added'].max()
-    max_date_added = datetime(max_date_added.year, max_date_added.month, max_date_added.day)
-    date_added_range = st.date_input('Select Date Added Range:', [min_date_added, max_date_added])
-
+    # Multi Select for gics_sub_industry
+    sub_industry = st.multiselect('Sub Industry', df_info['gics_sub_industry'].unique(), [])
 with col3:
-    # GICS_Sector Filter
-    gics_sectors = st.multiselect('Select GICS Sectors:', df_info['GICS_Sector'].sort_values().unique())
-    # CIK Filter
-    ciks = st.multiselect('Select CIKs:', df_info['CIK'].sort_values().unique())
-
+    # Multi Select for headquarters_location
+    location = st.multiselect('Location', df_info['headquarters_location'].unique(), [])
 with col4:
-    # GICS_Sub_Industry Filter
-    gics_sub_industries = st.multiselect('Select GICS Sub Industries:', df_info['GICS_Sub_Industry'].sort_values().unique())
-    # Founded Filter (multiselect)
-    founded_years = st.multiselect('Select Founded Years:', df_info['Founded'].sort_values().unique())
+    # Slider for Data Range
+    min_value, max_value = df_info['founded'].min(), df_info['founded'].max()
+    # Slider for Founded
+    founded = st.slider('Founded', min_value, max_value, [min_value, max_value])
 
-########################################################################
+############################################################################
 # Apply Filters
+if sector != []:
+    df_info = df_info[df_info['gics_sector'].isin(sector)]
+if sub_industry != []:
+    df_info = df_info[df_info['gics_sub_industry'].isin(sub_industry)]
+if location != []:
+    df_info = df_info[df_info['headquarters_location'].isin(location)]
+if founded != [min_value, max_value]:
+    df_info = df_info[(df_info['founded'] >= founded[0]) & (df_info['founded'] <= founded[1])]
+
+df_filtered = df_info
+
+############################################################################
+# Display Filtered DataFrame
+df_filtered['founded'] = df_filtered['founded'].astype(str)
+st.dataframe(df_filtered, use_container_width=True)
+
+# Get the first three tickers
+try:
+    ticker_list = df_filtered['symbol'].unique()[:3]
+    symbols = st.multiselect('Symbol', df_filtered['symbol'].unique(), ticker_list)
+except:
+    symbols = st.multiselect('Symbol', df_filtered['symbol'].unique(), [])
+
 if symbols != []:
-    df_info = df_info[df_info['Symbol'].isin(symbols)]
-if securities != []:
-    df_info = df_info[df_info['Security'].isin(securities)]
-if gics_sectors != []:
-    df_info = df_info[df_info['GICS_Sector'].isin(gics_sectors)]
-if gics_sub_industries != []:
-    df_info = df_info[df_info['GICS_Sub_Industry'].isin(gics_sub_industries)]
-if headquarters_locations != []:
-    df_info = df_info[df_info['Headquarters_Location'].isin(headquarters_locations)]
-if date_added_range != [min_date_added, max_date_added]:
-    first_date_added = date_added_range[0]
-    first_date_added = datetime(first_date_added.year, first_date_added.month, first_date_added.day)
-    last_date_added = date_added_range[1]
-    last_date_added = datetime(last_date_added.year, last_date_added.month, last_date_added.day)
-    df_info = df_info[(df_info['Date_Added'] >= first_date_added) & (df_info['Date_Added'] <= last_date_added)]
-if ciks != []:
-    df_info = df_info[df_info['CIK'].isin(ciks)]
-if founded_years != []:
-    df_info = df_info[df_info['Founded'].isin(founded_years)]
+    df_filtered = df_filtered[df_filtered['symbol'].isin(symbols)]
+elif symbols == []:
+    symbols = [df_filtered['symbol'].iloc[0]]
 
-########################################################################
-# Display SPX Info
-st.dataframe(df_info, use_container_width=True)
+############################################################################
+# Load SPX Prices
+df_close = get_spx_prices(symbols, host, user, password, database, port, metrics=['Close'])
+df_open = get_spx_prices(symbols, host, user, password, database, port, metrics=['Open'])
+df_high = get_spx_prices(symbols, host, user, password, database, port, metrics=['High'])
+df_low = get_spx_prices(symbols, host, user, password, database, port, metrics=['Low'])
+df_volume = get_spx_prices(symbols, host, user, password, database, port, metrics=['Volume'])
 
-########################################################################
-# Source SPX Prices
-# Get the First Symbol in the Filtered Dataframe
-symbol = df_info['Symbol'].iloc[0]
-# Multi Select Filter for Metrics: High, Low, Open, Close, Volume
-metrics_list = ['High', 'Low', 'Open', 'Close', 'Volume']
-metrics = st.multiselect('Select Metrics:', metrics_list, default=['Close'])
-if metrics == []:
-    metrics = ['Close']
-df_prices = get_spx_prices(symbol, server, user, password, database, port, metrics)
+############################################################################
+# Load SPX Financials
+df_financials = get_spx_financials(symbols, host, user, password, database, port)
 
-########################################################################
-# Line Chart (colored by Metric)
-fig = px.line(df_prices, x='Date',
-                         y='Value',
-                         color='Metric',
-                         title=f'{symbol} Metrics')
-# Add Legend
-fig.update_layout(legend_title_text='Metric')
-st.plotly_chart(fig, use_container_width=True)
+############################################################################
 
-########################################################################
-# Source SPX Financials
-df_financials = get_spx_financials(server, user, password, database, port)
-st.dataframe(df_financials, use_container_width=True)
+############################################################################
+col1, col2 = st.columns(2)
+with col1:
+    # Visualize SPX Metrics
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(["Close", "Open", "High", "Low", "Volume"])
+
+    def visualize_metric(df, metric):
+        fig = px.line(df, x='date', y='value', color='ticker')
+        # Add Title
+        fig.update_layout(title=f'{metric} Prices')
+        st.plotly_chart(fig, use_container_width=True)
+
+    with tab1:
+        visualize_metric(df_close, 'Close')
+    with tab2:
+        visualize_metric(df_open, 'Open')
+    with tab3:
+        visualize_metric(df_high, 'High')
+    with tab4:
+        visualize_metric(df_low, 'Low')
+    with tab5:
+        visualize_metric(df_volume, 'Volume')
+
+############################################################################
+# Visualize SPX Financials
+with col2:
+    # Filter for SPX Financials
+    sorted_unique = df_financials['variable'].sort_values().unique()
+    # Get the index of "Total Revenue"
+    index_num = [i for i, j in enumerate(sorted_unique) if j == 'Total Revenue'][0]
+    variable = st.selectbox('Value', df_financials['variable'].sort_values().unique(), index=index_num)
+    # Filter DataFrame
+    df_financials = df_financials[df_financials['variable'] == variable]
+    # Plot SPX Financials
+    fig = px.bar(df_financials, x='date', y='value', color='ticker')
+    st.plotly_chart(fig, use_container_width=True)
