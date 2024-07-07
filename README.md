@@ -58,6 +58,34 @@ This project consists of two data pipelines that scrape S&P 500 company informat
 
 The PostgreSQL database schema includes three primary tables: `info`, `prices`, and `financials`. Clustered indexes and partitioning are used to optimize query performance. 10 years of prices data and the last 4 quarters of financials data are stored in the database.
 
+```mermaid
+classDiagram
+    class info{
+        -varchar(255) symbol
+        -varchar(255) security
+        -varchar(255) gics_sector
+        -varchar(255) gics_sub_industry
+        -varchar(255) headquarters_location
+        -date date_added
+        -integer cik
+        -varchar(255) founded
+    }
+    class prices{
+        -date date
+        -varchar(255) ticker
+        -varchar(255) metric
+        -float value
+    }
+    class financials{
+        -varchar(255) ticker
+        -date date
+        -varchar(255) variable
+        -float value
+    }
+    info "1" -- "*" prices : contains
+    info "1" -- "*" financials : contains
+```
+
 ```sql
 -- create schema
 CREATE SCHEMA IF NOT EXISTS spx;
@@ -111,4 +139,5 @@ Given that Tableau Public does not support direct connections to databases, the 
 - The streamlit dashboard is deployed on a self-managed MicroK8s Kubernetes cluster and a second application that embed the Tableau dashboard is also deployed on the same cluster.
 
 Streamlit Dashboard: [https://juanberger.com/spx-streamlit](https://juanberger.com/spx-streamlit)
+
 Tableau Dashboard: [https://juanberger.com/spx-tableau](https://juanberger.com/spx-tableau)
