@@ -138,6 +138,6 @@ Given that Tableau Public does not support direct connections to databases, the 
 ## Deployment
 - The streamlit dashboard is deployed on a self-managed MicroK8s Kubernetes cluster and a second application that embed the Tableau dashboard is also deployed on the same cluster.
 
-Streamlit Dashboard: [https://juanberger.com/spx-streamlit](https://juanberger.com/spx-streamlit)
+Streamlit Dashboard: [https://www.juanberger.com/spx-streamlit](https://www.juanberger.com/spx-streamlit)
 
-Tableau Dashboard: [https://juanberger.com/spx-tableau](https://juanberger.com/spx-tableau)
+Tableau Dashboard: [https://www.juanberger.com/spx-tableau](https://www.juanberger.com/spx-tableau)
