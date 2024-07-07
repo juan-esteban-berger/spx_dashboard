@@ -30,11 +30,11 @@ This project consists of two data pipelines that scrape S&P 500 company informat
 
 ## Dashboards
 
-- **Streamlit Dashboard**: Provides a comprehensive view of the SP500 data using PostgreSQL as the data source. The live streamlit dashboard can be accessed at [https://juanberger.com/spx-streamlit](https://juanberger.com/spx-streamlit).
+- **Streamlit Dashboard**: Provides a comprehensive view of the SP500 data using PostgreSQL as the data source. The live streamlit dashboard can be accessed at [https://www.juanberger.com/spx-streamlit](https://www.juanberger.com/spx-streamlit).
 
 ![Streamlit Dashboard](https://github.com/juan-esteban-berger/spx_dashboard/blob/main/spx-streamlit.png)
 
-- **Tableau Dashboard**: Visualizes a limited dataset (due to Google Sheets constraints) and is embedded in the project website. The live Tableau dashboard can be accessed at [https://juanberger.com/spx-tableau](https://juanberger.com/spx-tableau).
+- **Tableau Dashboard**: Visualizes a limited dataset (due to Google Sheets constraints) and is embedded in the project website. The live Tableau dashboard can be accessed at [https://www.juanberger.com/spx-tableau](https://www.juanberger.com/spx-tableau).
 
 ![Tableau Dashboard](https://github.com/juan-esteban-berger/spx_dashboard/blob/main/spx-tableau.png)
 
