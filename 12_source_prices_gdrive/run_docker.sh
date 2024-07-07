@@ -13,4 +13,4 @@ export SPX_PRICES_GDRIVE=$prices_gdrive
 export SPX_FINANCIALS_GDRIVE=$financials_gdrive
 
 # Run the Docker container with the environment variables
-docker run -e JSON_CREDS="$JSON_CREDS" -e SPX_INFO_GDRIVE="$SPX_INFO_GDRIVE" -e SPX_PRICES_GDRIVE="$SPX_PRICES_GDRIVE" -e SPX_FINANCIALS_GDRIVE="$SPX_FINANCIALS_GDRIVE" spx_11_source_info_gdrive
+docker run -e JSON_CREDS="$JSON_CREDS" -e SPX_INFO_GDRIVE="$SPX_INFO_GDRIVE" -e SPX_PRICES_GDRIVE="$SPX_PRICES_GDRIVE" -e SPX_FINANCIALS_GDRIVE="$SPX_FINANCIALS_GDRIVE" spx_12_source_prices_gdrive

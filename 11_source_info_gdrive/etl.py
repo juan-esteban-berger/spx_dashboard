@@ -35,7 +35,7 @@ creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_data, scopes=scop
 # Authorize Client
 print("Authorizing client...")
 client = gspread.authorize(creds)
-sheet_url = 'https://docs.google.com/spreadsheets/d/1O4FdeQOp2KM0YTV6O9JMtzSQyiJ6qDBn5Ng7KSEL4v4/edit?usp=sharing'
+sheet_url = os.getenv('SPX_INFO_GDRIVE')
 
 ##########################################################################################
 # Load Data into Google Sheets

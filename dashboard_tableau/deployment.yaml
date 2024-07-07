@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spx-tableau-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tableau
+  template:
+    metadata:
+      labels:
+        app: tableau
+    spec:
+      containers:
+      - name: tableau
+        image: juanestebanberger/spx-tableau:latest
+        ports:
+        - containerPort: 8080
