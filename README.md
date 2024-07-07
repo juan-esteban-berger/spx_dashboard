@@ -30,14 +30,14 @@ This project consists of two data pipelines that scrape S&P 500 company informat
 
 ## Apahe Airflow Dags
 
-- The first dag scrapes the data and stores it in a PostgreSQL database.The data in PostgreSQL is used to populate the streamlit dashboard and is found in the 'etl_spx_dashboard.py' file. This dag consists of three docker operators:
+- The first dag scrapes the data and stores it in a PostgreSQL database.The data in PostgreSQL is used to populate the streamlit dashboard and is found in the `etl_spx_dashboard.py` file. This dag consists of three docker operators:
     - 01_source_info: Scrapes the S&P 500 company information from Wikipedia.
     - 02_source_prices: Scrapes the S&P 500 stock prices from Yahoo Finance.
     - 03_source_financials: Scrapes the S&P 500 quarterly financials from Yahoo Finance.
 
 ![Airflow DAG Image](https://www.cyberclick.es/hs-fs/hubfs/04.%20BLOG/Dashboard%20de%20DataBox.png)
 
-- The second dag scrapes the data and stores it in Google Sheets. The data in Google Sheets is used to populate the Tableau dashboard and is found in the 'etl_spx_dashboard_gdrive.py' file. This dag consists of three docker operators:
+- The second dag scrapes the data and stores it in Google Sheets. The data in Google Sheets is used to populate the Tableau dashboard and is found in the `etl_spx_dashboard_gdrive.py` file. This dag consists of three docker operators:
     - 11_source_info_gdrive: Scrapes the S&P 500 company information from Wikipedia.
     - 12_source_prices_gdrive: Scrapes the S&P 500 stock prices from Yahoo Finance.
     - 13_source_financials_gdrive: Scrapes the S&P 500 quarterly financials from Yahoo Finance.
