@@ -59,31 +59,31 @@ This project consists of two data pipelines that scrape S&P 500 company informat
 The PostgreSQL database schema includes three primary tables: `info`, `prices`, and `financials`. Clustered indexes and partitioning are used to optimize query performance. 10 years of prices data and the last 4 quarters of financials data are stored in the database.
 
 ```mermaid
-classDiagram
-    class info{
-        -varchar(255) symbol
-        -varchar(255) security
-        -varchar(255) gics_sector
-        -varchar(255) gics_sub_industry
-        -varchar(255) headquarters_location
-        -date date_added
-        -integer cik
-        -varchar(255) founded
+erDiagram
+    INFO ||--|| PRICES : "symbol - ticker"
+    INFO ||--|| FINANCIALS : "symbol - ticker"
+    INFO {
+      varchar(255) symbol
+      varchar(255) security
+      varchar(255) gics_sector
+      varchar(255) gics_sub_industry
+      varchar(255) headquarters_location
+      date date_added
+      integer cik
+      varchar(255) founded
     }
-    class prices{
-        -date date
-        -varchar(255) ticker
-        -varchar(255) metric
-        -float value
+    PRICES {
+      date date
+      varchar(255) ticker
+      varchar(255) metric
+      float value
     }
-    class financials{
-        -varchar(255) ticker
-        -date date
-        -varchar(255) variable
-        -float value
+    FINANCIALS {
+      varchar(255) ticker
+      date date
+      varchar(255) variable
+      float value
     }
-    info "1" -- "*" prices : contains
-    info "1" -- "*" financials : contains
 ```
 
 ```sql
