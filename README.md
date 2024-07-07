@@ -28,7 +28,7 @@ This project consists of two data pipelines that scrape S&P 500 company informat
 └── set_env.sh
 ```
 
-## Apahe Airflow Dags
+## Apache Airflow Dags
 
 - The first dag scrapes the data and stores it in a PostgreSQL database.The data in PostgreSQL is used to populate the streamlit dashboard and is found in the `etl_spx_dashboard.py` file. This dag consists of three docker operators:
     - 01_source_info: Scrapes the S&P 500 company information from Wikipedia.
