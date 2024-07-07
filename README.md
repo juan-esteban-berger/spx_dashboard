@@ -35,24 +35,24 @@ This project consists of two data pipelines that scrape S&P 500 company informat
     - 02_source_prices: Scrapes the S&P 500 stock prices from Yahoo Finance.
     - 03_source_financials: Scrapes the S&P 500 quarterly financials from Yahoo Finance.
 
-![Airflow DAG Image](https://www.cyberclick.es/hs-fs/hubfs/04.%20BLOG/Dashboard%20de%20DataBox.png)
+![Airflow DAG Image](https://github.com/juan-esteban-berger/spx_dashboard/blob/main/airflow-dag.png)
 
 - The second dag scrapes the data and stores it in Google Sheets. The data in Google Sheets is used to populate the Tableau dashboard and is found in the `etl_spx_dashboard_gdrive.py` file. This dag consists of three docker operators:
     - 11_source_info_gdrive: Scrapes the S&P 500 company information from Wikipedia.
     - 12_source_prices_gdrive: Scrapes the S&P 500 stock prices from Yahoo Finance.
     - 13_source_financials_gdrive: Scrapes the S&P 500 quarterly financials from Yahoo Finance.
 
-![Airflow DAG Image](https://www.cyberclick.es/hs-fs/hubfs/04.%20BLOG/Dashboard%20de%20DataBox.png)
+![Airflow DAG Image](https://github.com/juan-esteban-berger/spx_dashboard/blob/main/airflow-dag-gdrive.png)
 
 ## Dashboards
 
 - **Streamlit Dashboard**: Provides a comprehensive view of the SP500 data using PostgreSQL as the data source. The live streamlit dashboard can be accessed at [https://juanberger.com/spx-streamlit](https://juanberger.com/spx-streamlit).
 
-![Streamlit Dashboard](https://www.cyberclick.es/hs-fs/hubfs/04.%20BLOG/Dashboard%20de%20DataBox.png)
+![Streamlit Dashboard](https://github.com/juan-esteban-berger/spx_dashboard/blob/main/spx-streamlit.png)
 
 - **Tableau Dashboard**: Visualizes a limited dataset (due to Google Sheets constraints) and is embedded in the project website. The live Tableau dashboard can be accessed at [https://juanberger.com/spx-tableau](https://juanberger.com/spx-tableau).
 
-![Tableau Dashboard](https://www.cyberclick.es/hs-fs/hubfs/04.%20BLOG/Dashboard%20de%20DataBox.png)
+![Tableau Dashboard](https://github.com/juan-esteban-berger/spx_dashboard/blob/main/spx-tableau.png)
 
 ## PostgreSQL Database Schema
 
