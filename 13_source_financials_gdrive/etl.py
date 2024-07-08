@@ -63,6 +63,7 @@ sheet.clear()
 print("Writing new data to target sheet...")
 values = df_fundamentals.fillna("").values.tolist()
 values.insert(0, df_fundamentals.columns.tolist())
+sheet.resize(rows=df_fundamentals.shape[0]+1)
 sheet.insert_rows(values, row=1)
 
 print("Update successful, data now available in Google Sheets!")

@@ -21,7 +21,7 @@ df_info.columns = ['symbol', 'security', 'gics_sector', 'gics_sub_industry', 'he
 df_info['founded'] = df_info['founded'].str.extract(r'(\d+)')
 df_info['cik'] = df_info['cik'].astype(str)
 
-print(df_info.head())
+print(df_info)
 
 ##########################################################################################
 # Setup Credentials
@@ -49,6 +49,7 @@ worksheet.clear()
 print("Writing new data...")
 values = df_info.fillna("").values.tolist()
 values.insert(0, df_info.columns.tolist())
+worksheet.resize(rows=df_info.shape[0]+1)
 worksheet.insert_rows(values, row=1)
 
 print("Data updated successfully!")
