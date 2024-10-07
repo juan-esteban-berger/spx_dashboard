@@ -3,7 +3,7 @@ import pandas as pd
 import psycopg2
 from psycopg2.extras import execute_values
 from tqdm import tqdm
-from .data_fetcher import fetch_stock_prices
+from utils.fetch_stock_prices import fetch_stock_prices
 
 host = os.getenv('HOST')
 port = os.getenv('PORT')

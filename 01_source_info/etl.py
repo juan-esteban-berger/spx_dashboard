@@ -1,7 +1,7 @@
 import os
 import psycopg2
 from psycopg2.extras import execute_values
-from data_fetcher import fetch_sp500_companies
+from utils.fetch_sp500_companies import fetch_sp500_companies
 
 host = os.getenv('HOST')
 port = os.getenv('PORT')
