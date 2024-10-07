@@ -1,13 +1,9 @@
-import warnings
 import os
 import pandas as pd
 import psycopg2
 from psycopg2.extras import execute_values
-import yfinance as yf
 from tqdm import tqdm
-from datetime import datetime
-
-warnings.filterwarnings('ignore')
+from .data_fetcher import fetch_quarterly_financials
 
 host = os.getenv('HOST')
 port = os.getenv('PORT')
@@ -23,23 +19,8 @@ try:
     cur.execute("SELECT symbol FROM spx.info")
     df_symbols = pd.DataFrame(cur.fetchall(), columns=['symbol'])
 
-    # Source quarterly fundamentals
-    df_fundamentals = pd.DataFrame()
-
-    for ticker in tqdm(df_symbols['symbol'].tolist()):
-        try:
-            stock = yf.Ticker(ticker)
-            df_temp = stock.quarterly_financials.transpose().reset_index()
-            df_temp['Ticker'] = ticker
-
-            df_melt = pd.melt(df_temp, id_vars=['Ticker', 'index'])
-            df_fundamentals = pd.concat([df_fundamentals, df_melt], ignore_index=True)
-        except Exception as e:
-            print(f"Error for {ticker}: {e}")
-
-    df_fundamentals = df_fundamentals.rename(columns={'index': 'Date'})
-
-    df_fundamentals['Date'] = pd.to_datetime(df_fundamentals['Date']).dt.date
+    # Fetch quarterly financials
+    df_fundamentals = fetch_quarterly_financials(df_symbols['symbol'].tolist())
 
     # Output retrieved financials
     print(df_fundamentals)
@@ -59,7 +40,6 @@ try:
 except Exception as e:
     print("Error: ", e)
     exit(1)
-
 finally:
     if conn:
         conn.close()
