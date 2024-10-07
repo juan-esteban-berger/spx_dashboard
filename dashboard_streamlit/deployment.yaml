@@ -24,7 +24,7 @@ spec:
             - name: HOST
               valueFrom:
                 secretKeyRef:
-                  name: spx-streamlit-server
+                  name: spx-streamlit-host
                   key: server
             - name: PORT
               valueFrom:

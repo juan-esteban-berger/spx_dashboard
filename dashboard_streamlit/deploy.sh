@@ -1,11 +1,11 @@
 # Delete the old docker image
-sudo docker rmi juanestebanberger/spx_streamlit:latest
+docker rmi juanestebanberger/spx_streamlit:latest
 
 # Build the docker image
-sudo docker build -t juanestebanberger/spx_streamlit:latest .
+docker build -t juanestebanberger/spx_streamlit:latest .
 
 # Push the docker image to the docker hub
-sudo docker push juanestebanberger/spx_streamlit:latest
+docker push juanestebanberger/spx_streamlit:latest
 
 # Delete the old deployment
 microk8s kubectl delete deployment spx-streamlit-deployment
