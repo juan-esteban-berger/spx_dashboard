@@ -1,55 +1,52 @@
-import warnings
-warnings.filterwarnings('ignore')
-
-import pandas as pd
-import gspread
 import os
 import json
+import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+from data_fetcher import fetch_sp500_companies_gdrive
 
-##########################################################################################
-# Extract Data
-print("Sourcing data...")
-url = 'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies'
-df_info = pd.read_html(url)[0]
+def etl_sp500_info_gdrive():
+    """
+    Perform ETL process for S&P 500 companies info and store in Google Drive.
 
-##########################################################################################
-# Transform Data
-df_info['Date added'] = pd.to_datetime(df_info['Date added'])
-df_info['Date added'] = df_info['Date added'].apply(lambda x: x.strftime('%Y-%m-%d')) if not df_info['Date added'].isnull().all() else df_info['Date added']
-df_info.columns = ['symbol', 'security', 'gics_sector', 'gics_sub_industry', 'headquarters_location', 'date_added', 'cik', 'founded']
-df_info['founded'] = df_info['founded'].str.extract(r'(\d+)')
-df_info['cik'] = df_info['cik'].astype(str)
+    This function extracts data using the fetch_sp500_companies_gdrive function,
+    transforms it as needed, and loads it into a Google Sheet.
 
-print(df_info)
+    Raises:
+        Exception: If there's an error in the ETL process
+    """
+    try:
+        # Extract Data
+        print("Sourcing data...")
+        df_info = fetch_sp500_companies_gdrive()
+        print(df_info)
 
-##########################################################################################
-# Setup Credentials
-print("Setting up credentials...")
-scope = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
+        # Setup Credentials
+        print("Setting up credentials...")
+        scope = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
+        creds_data = json.loads(os.getenv('JSON_CREDS'))
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_data, scopes=scope)
 
-creds_data = json.loads(os.getenv('JSON_CREDS'))
-creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_data, scopes=scope)
+        # Authorize Client
+        print("Authorizing client...")
+        client = gspread.authorize(creds)
+        sheet_url = os.getenv('SPX_INFO_GDRIVE')
 
-##########################################################################################
-# Authorize Client
-print("Authorizing client...")
-client = gspread.authorize(creds)
-sheet_url = os.getenv('SPX_INFO_GDRIVE')
+        # Load Data into Google Sheets
+        print("Accessing sheet...")
+        sheet = client.open_by_url(sheet_url)
+        worksheet = sheet.get_worksheet(0)
+        print("Clearing old data...")
+        worksheet.clear()
+        print("Writing new data...")
+        values = df_info.fillna("").values.tolist()
+        values.insert(0, df_info.columns.tolist())
+        worksheet.resize(rows=df_info.shape[0]+1)
+        worksheet.insert_rows(values, row=1)
+        print("Data updated successfully!")
 
-##########################################################################################
-# Load Data into Google Sheets
-print("Accessing sheet...")
-sheet = client.open_by_url(sheet_url)
-worksheet = sheet.get_worksheet(0)
+    except Exception as e:
+        print(f"Error in ETL process: {str(e)}")
+        raise
 
-print("Clearing old data...")
-worksheet.clear()
-
-print("Writing new data...")
-values = df_info.fillna("").values.tolist()
-values.insert(0, df_info.columns.tolist())
-worksheet.resize(rows=df_info.shape[0]+1)
-worksheet.insert_rows(values, row=1)
-
-print("Data updated successfully!")
+if __name__ == "__main__":
+    etl_sp500_info_gdrive()

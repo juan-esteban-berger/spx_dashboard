@@ -3,7 +3,7 @@ import pandas as pd
 import psycopg2
 from psycopg2.extras import execute_values
 from tqdm import tqdm
-from .data_fetcher import fetch_quarterly_financials
+from data_fetcher import fetch_quarterly_financials
 
 host = os.getenv('HOST')
 port = os.getenv('PORT')

@@ -11,12 +11,12 @@ sys.path.append(str(project_root))
 
 # Use importlib to import from a directory with a numeric prefix
 import importlib
-data_fetcher = importlib.import_module("02_source_prices.data_fetcher")
-fetch_stock_prices = data_fetcher.fetch_stock_prices
+data_fetcher = importlib.import_module("12_source_prices_gdrive.data_fetcher")
+fetch_stock_prices_gdrive = data_fetcher.fetch_stock_prices_gdrive
 
-def test_fetch_stock_prices():
+def test_fetch_stock_prices_gdrive():
     """
-    Test the fetch_stock_prices function.
+    Test the fetch_stock_prices_gdrive function.
 
     This test checks if the function returns a DataFrame with the expected structure
     and content for a small set of symbols and a short date range.
@@ -24,11 +24,12 @@ def test_fetch_stock_prices():
     symbols = ['AAPL', 'GOOGL', 'MSFT']
     end_date = datetime.now() - timedelta(days=1)
     start_date = end_date - timedelta(days=3)
-
-    # Suppress the specific DeprecationWarning from tqdm
+    
+    # Suppress warnings
     with warnings.catch_warnings():
-        warnings.filterwarnings("ignore", category=DeprecationWarning, module="tqdm")
-        df = fetch_stock_prices(symbols, start_date, end_date)
+        warnings.filterwarnings("ignore", category=DeprecationWarning)
+        warnings.filterwarnings("ignore", category=FutureWarning)
+        df = fetch_stock_prices_gdrive(symbols, start_date, end_date)
 
     # Check if it's a DataFrame
     assert isinstance(df, pd.DataFrame), "Result should be a pandas DataFrame"
@@ -52,4 +53,7 @@ def test_fetch_stock_prices():
     assert set(expected_metrics).issubset(set(df['Metric'])), "Not all expected metrics are present"
 
 if __name__ == "__main__":
-    pytest.main()
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=DeprecationWarning)
+        warnings.filterwarnings("ignore", category=FutureWarning)
+        pytest.main()
