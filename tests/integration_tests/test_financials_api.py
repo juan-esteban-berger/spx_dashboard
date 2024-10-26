@@ -30,20 +30,33 @@ def test_financials_api_connection():
         missing_cols = expected_columns - set(df.columns)
         assert not missing_cols, f"Missing columns: {missing_cols}"
         
-        # Test 3: Financial Variables Analysis
-        print("\n3. Analyzing financial variables...")
-        print("\nUnique financial variables:")
-        variables = df['variable'].unique()
-        print(pd.Series(variables).to_string())
+        # Test 3: Filter Options Endpoint
+        print("\n3. Testing filter options endpoint...")
+        filter_response = requests.get(f"{base_url}/filter_options/")
+        assert filter_response.status_code == 200
+        filter_data = filter_response.json()
+        print("\nAvailable filter options:")
+        print(f"Date range: {filter_data['date_range']}")
+        print(f"Variables: {filter_data['variables'][:5]}")
         
-        # Test 4: Testing Symbol Filter
-        print("\n4. Testing symbol filter...")
+        # Test 4: Testing Multiple Filters
+        print("\n4. Testing multiple filters...")
         test_ticker = df['ticker'].iloc[0]
-        symbol_response = requests.get(f"{base_url}/?symbols[]={test_ticker}&limit=5")
-        assert symbol_response.status_code == 200
-        symbol_df = pd.DataFrame(symbol_response.json())
-        print(f"\nFinancial records for {test_ticker}:")
-        print(symbol_df.to_string())
+        test_variable = df['variable'].iloc[0]
+        test_date_min = filter_data['date_range']['min']
+        test_date_max = filter_data['date_range']['max']
+        
+        filter_url = (f"{base_url}/?symbols[]={test_ticker}"
+                     f"&variables[]={test_variable}"
+                     f"&date_min={test_date_min}"
+                     f"&date_max={test_date_max}"
+                     "&limit=5")
+        
+        filter_response = requests.get(filter_url)
+        assert filter_response.status_code == 200
+        filtered_df = pd.DataFrame(filter_response.json())
+        print(f"\nFiltered financial records:")
+        print(filtered_df.to_string())
         
         # Test 5: Value Range Analysis
         print("\n5. Analyzing value ranges...")

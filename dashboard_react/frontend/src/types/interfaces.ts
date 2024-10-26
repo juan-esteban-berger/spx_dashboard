@@ -27,4 +27,14 @@ export interface FilterOptions {
   symbols: string[];
   sectors: string[];
   subIndustries: string[];
+  locations: string[];
+  foundedRange: {
+    min: number;
+    max: number;
+  };
+}
+
+export interface YearOption {
+  label: string;
+  value: number;
 }

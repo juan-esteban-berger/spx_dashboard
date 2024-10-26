@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import { Company, Price, Financial, FilterOptions } from '@/types/interfaces';
@@ -6,14 +6,15 @@ import { fetchFilterOptions, fetchCompanyData, fetchPriceData, fetchFinancialsDa
 import { StatsCards } from '@/components/dashboard/StatsCards';
 import { Filters } from '@/components/dashboard/Filters';
 import { CompanyGrid } from '@/components/dashboard/CompanyGrid';
-import { DebugPriceData } from '@/components/dashboard/DebugPriceData';
-import { DebugFinancialsData } from '@/components/dashboard/DebugFinancialsData';
+import { PriceSection } from '@/components/dashboard/PriceSection';
+import { FinancialsSection } from '@/components/dashboard/FinancialsSection';
+import { filterCompanies } from '@/utils/filteringUtils';
 
 {/*****************************************************************************/}
 {/*****************************************************************************/}
 {/*****************************************************************************/}
 {/* Main Dashboard Component */}
-function App() {
+const App = () => {
   {/* State Management */}
   // Main data states for companies and their stock prices
   const [infoData, setInfoData] = useState<Company[]>([]);
@@ -24,7 +25,12 @@ function App() {
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
     symbols: [],
     sectors: [],
-    subIndustries: []
+    subIndustries: [],
+    locations: [],
+    foundedRange: {
+      min: 0,
+      max: 0
+    }
   });
   
   // Currently selected filter values
@@ -32,10 +38,26 @@ function App() {
   const [selectedSectors, setSelectedSectors] = useState<string[]>([]);
   const [selectedSubIndustries, setSelectedSubIndustries] = useState<string[]>([]);
   const [selectedTicker, setSelectedTicker] = useState<string>('');
+  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
+  const [minYear, setMinYear] = useState<number | null>(null);
+  const [maxYear, setMaxYear] = useState<number | null>(null);
   
   // UI state management
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  {/*****************************************************************************/}
+  {/* Memoized Filtered Data */}
+  const filteredCompanies = useMemo(() => {
+    return filterCompanies(infoData, {
+      selectedSymbols,
+      selectedSectors,
+      selectedSubIndustries,
+      selectedLocations,
+      minYear,
+      maxYear,
+    });
+  }, [infoData, selectedSymbols, selectedSectors, selectedSubIndustries, selectedLocations, minYear, maxYear]);
 
   {/*****************************************************************************/}
   {/*****************************************************************************/}
@@ -57,23 +79,6 @@ function App() {
     };
     initializeData();
   }, []);
-
-  // Fetches company data whenever filters change
-  useEffect(() => {
-    const loadCompanyData = async () => {
-      setLoading(true);
-      try {
-        const data = await fetchCompanyData(selectedSymbols, selectedSectors, selectedSubIndustries);
-        setInfoData(data);
-      } catch (error) {
-        console.error('Error loading company data:', error);
-        setError(`Failed to load company data: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadCompanyData();
-  }, [selectedSymbols, selectedSectors, selectedSubIndustries]);
 
   // Fetches price data when a specific ticker is selected
   useEffect(() => {
@@ -116,12 +121,9 @@ function App() {
   {/*****************************************************************************/}
   {/* Component Render */}
   return (
-    <div className="p-4">
+    <div className="p-4 pt-20">
       {/* Dashboard Header */}
-      <h1 className="text-3xl font-bold mb-6 text-center">S&P 500 Dashboard</h1>
-      
-      {/* Statistics Overview Cards */}
-      <StatsCards companies={infoData} />
+      <h1 className="text-5xl font-bold mb-6 text-center">S&P 500 Dashboard</h1>
       
       {/* Filter Selection Section */}
       <Filters
@@ -129,10 +131,19 @@ function App() {
         selectedSymbols={selectedSymbols}
         selectedSectors={selectedSectors}
         selectedSubIndustries={selectedSubIndustries}
+        selectedLocations={selectedLocations}
+        minYear={minYear}
+        maxYear={maxYear}
         setSelectedSymbols={setSelectedSymbols}
         setSelectedSectors={setSelectedSectors}
         setSelectedSubIndustries={setSelectedSubIndustries}
+        setSelectedLocations={setSelectedLocations}
+        setMinYear={setMinYear}
+        setMaxYear={setMaxYear}
       />
+
+      {/* Statistics Overview Cards */}
+      <StatsCards companies={filteredCompanies} />
 
       {/* Loading and Error States */}
       {loading && (
@@ -146,10 +157,18 @@ function App() {
       )}
 
       {/* Main Company Data Grid */}
-      <CompanyGrid companies={infoData} />
+      <CompanyGrid 
+        companies={filteredCompanies}
+        selectedSymbols={selectedSymbols}
+        selectedSectors={selectedSectors}
+        selectedSubIndustries={selectedSubIndustries}
+        selectedLocations={selectedLocations}
+        minYear={minYear}
+        maxYear={maxYear}
+      />
 
       {/* Debug Section for Price Data */}
-      <DebugPriceData
+      <PriceSection
         filterOptions={filterOptions}
         selectedTicker={selectedTicker}
         setSelectedTicker={setSelectedTicker}
@@ -158,7 +177,7 @@ function App() {
       />
 
       {/* Debug Section for Financials Data */}
-      <DebugFinancialsData
+      <FinancialsSection
         filterOptions={filterOptions}
         selectedTicker={selectedTicker}
         setSelectedTicker={setSelectedTicker}
@@ -167,6 +186,6 @@ function App() {
       />
     </div>
   );
-}
+};
 
 export default App;

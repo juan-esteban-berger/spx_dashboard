@@ -1,12 +1,12 @@
 import { Price, FilterOptions } from '@/types/interfaces';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2 } from "lucide-react"; // Import the spinner icon
+import { Loader2 } from "lucide-react";
+import { MultiSelect } from "@/components/custom/multi-select";
 
 {/*****************************************************************************/}
 {/* Interface Definitions */}
 
-interface DebugPriceDataProps {
+interface PriceSectionProps {
   filterOptions: FilterOptions;                  // Available filter options
   selectedTicker: string;                        // Currently selected stock ticker
   setSelectedTicker: (ticker: string) => void;   // Function to update selected ticker
@@ -15,15 +15,33 @@ interface DebugPriceDataProps {
 }
 
 {/*****************************************************************************/}
-{/* DebugPriceData Component */}
+{/* PriceSection Component */}
 // Debug component to display and inspect price data for selected stocks
-export const DebugPriceData = ({
+export const PriceSection = ({
   filterOptions,
   selectedTicker,
   setSelectedTicker,
   pricesData,
   loading = false // Default to false if not provided
-}: DebugPriceDataProps) => {
+}: PriceSectionProps) => {
+  // Convert selected ticker to option format
+  const selectedOption = selectedTicker 
+    ? [{ label: selectedTicker, value: selectedTicker }] 
+    : [];
+
+  // Convert available symbols to options format
+  const symbolOptions = filterOptions.symbols.map(symbol => ({
+    label: symbol,
+    value: symbol
+  }));
+
+  // Handle selection changes
+  const handleSelectionChange = (selected: { label: string; value: string }[]) => {
+    // Since we're using this as a single select, we'll take the first (or last) selection
+    const lastSelected = selected[selected.length - 1];
+    setSelectedTicker(lastSelected ? lastSelected.value : '');
+  };
+
   return (
     <Card className="mt-6">
       <CardHeader>
@@ -35,20 +53,14 @@ export const DebugPriceData = ({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {/* Ticker Selection Dropdown */}
-        <div className="w-[200px]">
-          <Select value={selectedTicker} onValueChange={setSelectedTicker}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select a symbol..." />
-            </SelectTrigger>
-            <SelectContent>
-              {filterOptions.symbols.map((symbol) => (
-                <SelectItem key={symbol} value={symbol}>
-                  {symbol}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        {/* Ticker Selection with MultiSelect */}
+        <div className="w-[300px] mb-4">
+          <MultiSelect
+            options={symbolOptions}
+            selected={selectedOption}
+            onChange={handleSelectionChange}
+            placeholder="Select a symbol..."
+          />
         </div>
 
         {/* Price Data Display */}

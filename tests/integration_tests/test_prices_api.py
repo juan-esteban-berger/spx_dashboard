@@ -30,24 +30,38 @@ def test_prices_api_connection():
         missing_cols = expected_columns - set(df.columns)
         assert not missing_cols, f"Missing columns: {missing_cols}"
         
-        # Test 3: Testing Ticker Filter
-        print("\n3. Testing ticker filter...")
-        test_ticker = df['ticker'].iloc[0]
-        ticker_response = requests.get(f"{base_url}/by_ticker/?ticker={test_ticker}&limit=5")
-        assert ticker_response.status_code == 200
-        ticker_df = pd.DataFrame(ticker_response.json())
-        print(f"\nPrice records for {test_ticker}:")
-        print(ticker_df.to_string())
+        # Test 3: Filter Options Endpoint
+        print("\n3. Testing filter options endpoint...")
+        filter_response = requests.get(f"{base_url}/filter_options/")
+        assert filter_response.status_code == 200
+        filter_data = filter_response.json()
+        print("\nAvailable filter options:")
+        print(f"Date range: {filter_data['date_range']}")
+        print(f"Metrics: {filter_data['metrics']}")
         
-        # Test 4: Metrics Analysis
-        print("\n4. Analyzing available metrics...")
-        print("\nUnique metrics available:")
-        print(df['metric'].unique())
+        # Test 4: Testing Multiple Filters
+        print("\n4. Testing multiple filters...")
+        test_ticker = df['ticker'].iloc[0]
+        test_metric = df['metric'].iloc[0]
+        test_date_min = filter_data['date_range']['min']
+        test_date_max = filter_data['date_range']['max']
+        
+        filter_url = (f"{base_url}/?symbols[]={test_ticker}"
+                     f"&metrics[]={test_metric}"
+                     f"&date_min={test_date_min}"
+                     f"&date_max={test_date_max}"
+                     "&limit=5")
+        
+        filter_response = requests.get(filter_url)
+        assert filter_response.status_code == 200
+        filtered_df = pd.DataFrame(filter_response.json())
+        print(f"\nFiltered price records:")
+        print(filtered_df.to_string())
         
         # Test 5: Date Range Validation
+        print("\n5. Testing date range filter...")
         df['date'] = pd.to_datetime(df['date'])
-        print("\n5. Analyzing date range...")
-        print(f"Date range: {df['date'].min()} to {df['date'].max()}")
+        print(f"Full date range: {df['date'].min()} to {df['date'].max()}")
         
     except Exception as e:
         pytest.fail(f"Test failed: {str(e)}")

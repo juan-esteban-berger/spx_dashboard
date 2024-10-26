@@ -1,61 +1,62 @@
 import { dateFormatter } from '@/utils/formatters';
+import { ColDef } from 'ag-grid-community';
 
-{/*****************************************************************************/}
-{/* AG-Grid Column Definitions */}
-// Defines the structure and behavior of each column in the company grid
-export const infoColumns = [
-  // Basic Company Information
+export const infoColumns: ColDef[] = [
   { 
-    field: 'symbol',             // Stock symbol
-    headerName: 'Symbol', 
-    filter: true, 
-    sortable: true 
-  },
-  { 
-    field: 'security',           // Company name
-    headerName: 'Security', 
-    filter: true, 
-    sortable: true 
-  },
-  
-  // Industry Classification
-  { 
-    field: 'gics_sector',        // Industry sector
-    headerName: 'Sector', 
-    filter: true, 
-    sortable: true 
-  },
-  { 
-    field: 'gics_sub_industry',  // Sub-industry category
-    headerName: 'Sub Industry', 
-    filter: true, 
-    sortable: true 
-  },
-  
-  // Additional Company Details
-  { 
-    field: 'headquarters_location', // Company location
-    headerName: 'Location', 
-    filter: true, 
-    sortable: true 
-  },
-  { 
-    field: 'date_added',         // Date added to S&P 500
-    headerName: 'Date Added', 
-    filter: true, 
+    field: 'symbol',
+    headerName: 'Symbol',
     sortable: true,
-    valueFormatter: dateFormatter // Custom date formatting
+    width: 120,
+    suppressMovable: true
   },
   { 
-    field: 'cik',               // SEC identifier
-    headerName: 'CIK', 
-    filter: true, 
-    sortable: true 
+    field: 'security',
+    headerName: 'Security',
+    sortable: true,
+    flex: 1,
+    suppressMovable: true
   },
   { 
-    field: 'founded',           // Company founding date
-    headerName: 'Founded', 
-    filter: true, 
-    sortable: true 
+    field: 'gics_sector',
+    headerName: 'Sector',
+    sortable: true,
+    width: 160,
+    suppressMovable: true
+  },
+  { 
+    field: 'gics_sub_industry',
+    headerName: 'Sub Industry',
+    sortable: true,
+    width: 200,
+    suppressMovable: true
+  },
+  { 
+    field: 'headquarters_location',
+    headerName: 'Location',
+    sortable: true,
+    width: 150,
+    suppressMovable: true
+  },
+  { 
+    field: 'date_added',
+    headerName: 'Date Added',
+    sortable: true,
+    width: 150,
+    valueFormatter: dateFormatter,
+    suppressMovable: true
+  },
+  { 
+    field: 'cik',
+    headerName: 'CIK',
+    sortable: true,
+    width: 120,
+    suppressMovable: true
+  },
+  { 
+    field: 'founded',
+    headerName: 'Founded',
+    sortable: true,
+    width: 120,
+    suppressMovable: true
   }
 ];

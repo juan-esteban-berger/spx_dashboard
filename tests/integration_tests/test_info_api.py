@@ -7,7 +7,6 @@ pd.set_option('display.expand_frame_repr', False)
 
 def test_info_api_connection():
     """Test connection and data quality for Info API endpoint"""
-    # Load Django API URL
     api_url_path = "/home/juaneshberger/Credentials/spx-django.txt"
     with open(api_url_path, 'r') as f:
         api_url = f.read().strip()
@@ -46,17 +45,28 @@ def test_info_api_connection():
         filter_data = filter_response.json()
         print("\nAvailable filter options:")
         for key, values in filter_data.items():
-            print(f"\n{key}: {len(values)} unique values")
-            print(f"Sample values: {values[:5]}")
+            if key == 'founded_range':
+                print(f"\n{key}: min={values['min']}, max={values['max']}")
+            else:
+                print(f"\n{key}: {len(values)} unique values")
+                print(f"Sample values: {values[:5]}")
         
-        # Test 5: Filtered Query
-        print("\n5. Testing filtered query...")
+        # Test 5: Testing multiple filters
+        print("\n5. Testing multiple filters...")
         test_sector = df['gics_sector'].iloc[0]
-        filter_url = f"{base_url}/?sectors[]={test_sector}"
+        test_location = df['headquarters_location'].iloc[0]
+        test_founded_min = filter_data['founded_range']['min']
+        test_founded_max = filter_data['founded_range']['max']
+        
+        filter_url = (f"{base_url}/?sectors[]={test_sector}"
+                     f"&locations[]={test_location}"
+                     f"&founded_min={test_founded_min}"
+                     f"&founded_max={test_founded_max}")
+        
         filter_response = requests.get(filter_url)
         assert filter_response.status_code == 200
         filtered_df = pd.DataFrame(filter_response.json())
-        print(f"\nFiltered results for sector '{test_sector}':")
+        print(f"\nFiltered results:")
         print(f"Number of companies: {len(filtered_df)}")
         print(filtered_df.head().to_string())
 
