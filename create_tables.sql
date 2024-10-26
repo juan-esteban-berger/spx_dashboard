@@ -40,3 +40,38 @@ CREATE TABLE spx.financials
 
 -- create index for table financials
 CREATE INDEX IX_financials ON spx.financials (ticker, date);
+
+-- Create views with IDs for Django
+-- Info view with ID
+CREATE OR REPLACE VIEW spx.info_view AS
+SELECT 
+    ROW_NUMBER() OVER (ORDER BY symbol) as id,
+    symbol,
+    security,
+    gics_sector,
+    gics_sub_industry,
+    headquarters_location,
+    date_added,
+    cik,
+    founded
+FROM spx.info;
+
+-- Prices view with ID
+CREATE OR REPLACE VIEW spx.prices_view AS
+SELECT 
+    ROW_NUMBER() OVER (ORDER BY date, ticker, metric) as id,
+    date,
+    ticker,
+    metric,
+    value
+FROM spx.prices;
+
+-- Financials view with ID
+CREATE OR REPLACE VIEW spx.financials_view AS
+SELECT 
+    ROW_NUMBER() OVER (ORDER BY ticker, date, variable) as id,
+    ticker,
+    date,
+    variable,
+    value
+FROM spx.financials;
