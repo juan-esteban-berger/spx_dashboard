@@ -6,16 +6,19 @@ import { fetchFilterOptions, fetchCompanyData, fetchPriceData, fetchFinancialsDa
 import { StatsCards } from '@/components/dashboard/StatsCards';
 import { Filters } from '@/components/dashboard/Filters';
 import { CompanyGrid } from '@/components/dashboard/CompanyGrid';
-import { PriceSection } from '@/components/dashboard/PriceSection';
-import { FinancialsSection } from '@/components/dashboard/FinancialsSection';
+import { CombinedDataSection } from '@/components/dashboard/CombinedDataSection';
 import { filterCompanies } from '@/utils/filteringUtils';
+import { AlertDialog, AlertDialogContent } from "@/components/ui/alert-dialog";
+import { Loader2 } from "lucide-react";
 
-{/*****************************************************************************/}
-{/*****************************************************************************/}
 {/*****************************************************************************/}
 {/* Main Dashboard Component */}
 const App = () => {
+  {/*****************************************************************************/}
   {/* State Management */}
+  // Initialization state
+  const [initializing, setInitializing] = useState(true);
+
   // Main data states for companies and their stock prices
   const [infoData, setInfoData] = useState<Company[]>([]);
   const [pricesData, setPricesData] = useState<Price[]>([]);
@@ -37,7 +40,7 @@ const App = () => {
   const [selectedSymbols, setSelectedSymbols] = useState<string[]>([]);
   const [selectedSectors, setSelectedSectors] = useState<string[]>([]);
   const [selectedSubIndustries, setSelectedSubIndustries] = useState<string[]>([]);
-  const [selectedTicker, setSelectedTicker] = useState<string>('');
+  const [selectedTicker, setSelectedTicker] = useState<string>('AAPL');
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
   const [minYear, setMinYear] = useState<number | null>(null);
   const [maxYear, setMaxYear] = useState<number | null>(null);
@@ -60,21 +63,35 @@ const App = () => {
   }, [infoData, selectedSymbols, selectedSectors, selectedSubIndustries, selectedLocations, minYear, maxYear]);
 
   {/*****************************************************************************/}
-  {/*****************************************************************************/}
-  {/*****************************************************************************/}
   {/* Data Fetching Effects */}
 
-  // Initial data load - fetches filter options and company data on component mount
+  // Initial data load with loading dialog
   useEffect(() => {
     const initializeData = async () => {
+      setInitializing(true);
       try {
-        const options = await fetchFilterOptions();
+        // Fetch initial data in parallel
+        const [options, data] = await Promise.all([
+          fetchFilterOptions(),
+          fetchCompanyData([], [], [])
+        ]);
+
         setFilterOptions(options);
-        const data = await fetchCompanyData([], [], []);
         setInfoData(data);
+
+        // Fetch initial prices and financials for AAPL
+        const [prices, financials] = await Promise.all([
+          fetchPriceData('AAPL'),
+          fetchFinancialsData('AAPL')
+        ]);
+
+        setPricesData(prices);
+        setFinancialsData(financials);
       } catch (error) {
         console.error('Error initializing data:', error);
         setError(`Failed to initialize data: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      } finally {
+        setInitializing(false);
       }
     };
     initializeData();
@@ -83,7 +100,7 @@ const App = () => {
   // Fetches price data when a specific ticker is selected
   useEffect(() => {
     const loadPriceData = async () => {
-      if (!selectedTicker) return;
+      if (!selectedTicker || initializing) return;
       setLoading(true);
       try {
         const data = await fetchPriceData(selectedTicker);
@@ -96,12 +113,12 @@ const App = () => {
       }
     };
     loadPriceData();
-  }, [selectedTicker]);
+  }, [selectedTicker, initializing]);
 
   // Fetches financials data when a specific ticker is selected
   useEffect(() => {
     const loadFinancialsData = async () => {
-      if (!selectedTicker) return;
+      if (!selectedTicker || initializing) return;
       setLoading(true);
       try {
         const data = await fetchFinancialsData(selectedTicker);
@@ -114,77 +131,82 @@ const App = () => {
       }
     };
     loadFinancialsData();
-  }, [selectedTicker]);
+  }, [selectedTicker, initializing]);
 
-  {/*****************************************************************************/}
-  {/*****************************************************************************/}
   {/*****************************************************************************/}
   {/* Component Render */}
   return (
-    <div className="p-4 pt-20">
-      {/* Dashboard Header */}
-      <h1 className="text-5xl font-bold mb-6 text-center">S&P 500 Dashboard</h1>
-      
-      {/* Filter Selection Section */}
-      <Filters
-        filterOptions={filterOptions}
-        selectedSymbols={selectedSymbols}
-        selectedSectors={selectedSectors}
-        selectedSubIndustries={selectedSubIndustries}
-        selectedLocations={selectedLocations}
-        minYear={minYear}
-        maxYear={maxYear}
-        setSelectedSymbols={setSelectedSymbols}
-        setSelectedSectors={setSelectedSectors}
-        setSelectedSubIndustries={setSelectedSubIndustries}
-        setSelectedLocations={setSelectedLocations}
-        setMinYear={setMinYear}
-        setMaxYear={setMaxYear}
-      />
+    <>
+      {/* Loading Dialog */}
+      <AlertDialog open={initializing}>
+        <AlertDialogContent className="flex flex-col items-center justify-center gap-4 sm:max-w-[425px]">
+          <div className="flex items-center gap-4">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <h2 className="text-xl font-semibold">Loading Dashboard Data...</h2>
+          </div>
+          <p className="text-center text-sm text-muted-foreground">
+            Please wait while we fetch the latest market data.
+          </p>
+        </AlertDialogContent>
+      </AlertDialog>
 
-      {/* Statistics Overview Cards */}
-      <StatsCards companies={filteredCompanies} />
+      <div className="p-4 pt-20">
+        {/* Dashboard Header */}
+        <h1 className="text-5xl font-bold mb-6 text-center">S&P 500 Dashboard</h1>
+        
+        {/* Filter Selection Section */}
+        <Filters
+          filterOptions={filterOptions}
+          selectedSymbols={selectedSymbols}
+          selectedSectors={selectedSectors}
+          selectedSubIndustries={selectedSubIndustries}
+          selectedLocations={selectedLocations}
+          minYear={minYear}
+          maxYear={maxYear}
+          setSelectedSymbols={setSelectedSymbols}
+          setSelectedSectors={setSelectedSectors}
+          setSelectedSubIndustries={setSelectedSubIndustries}
+          setSelectedLocations={setSelectedLocations}
+          setMinYear={setMinYear}
+          setMaxYear={setMaxYear}
+        />
 
-      {/* Loading and Error States */}
-      {loading && (
-        <div className="text-gray-600 mb-4">Loading data...</div>
-      )}
-      
-      {error && (
-        <div className="text-red-600 mb-4 p-2 border border-red-300 rounded">
-          {error}
-        </div>
-      )}
+        {/* Statistics Overview Cards */}
+        <StatsCards companies={filteredCompanies} />
 
-      {/* Main Company Data Grid */}
-      <CompanyGrid 
-        companies={filteredCompanies}
-        selectedSymbols={selectedSymbols}
-        selectedSectors={selectedSectors}
-        selectedSubIndustries={selectedSubIndustries}
-        selectedLocations={selectedLocations}
-        minYear={minYear}
-        maxYear={maxYear}
-      />
+        {/* Loading and Error States */}
+        {loading && (
+          <div className="text-gray-600 mb-4">Loading data...</div>
+        )}
+        
+        {error && (
+          <div className="text-red-600 mb-4 p-2 border border-red-300 rounded">
+            {error}
+          </div>
+        )}
 
-      {/* Debug Section for Price Data */}
-      <PriceSection
-        filterOptions={filterOptions}
-        selectedTicker={selectedTicker}
-        setSelectedTicker={setSelectedTicker}
-        pricesData={pricesData}
-        loading={loading}
-      />
+        {/* Main Company Data Grid */}
+        <CompanyGrid 
+          companies={filteredCompanies}
+          selectedSymbols={selectedSymbols}
+          selectedSectors={selectedSectors}
+          selectedSubIndustries={selectedSubIndustries}
+          selectedLocations={selectedLocations}
+          minYear={minYear}
+          maxYear={maxYear}
+        />
 
-      {/* Debug Section for Financials Data */}
-      <FinancialsSection
-        filterOptions={filterOptions}
-        selectedTicker={selectedTicker}
-        setSelectedTicker={setSelectedTicker}
-        financialsData={financialsData}
-        loading={loading}
-      />
-    </div>
+        {/* Combined Data Section */}
+        <CombinedDataSection
+          filterOptions={filterOptions}
+          selectedTicker={selectedTicker}
+          setSelectedTicker={setSelectedTicker}
+          pricesData={pricesData}
+          financialsData={financialsData}
+          loading={loading}
+        />
+      </div>
+    </>
   );
 };
 
