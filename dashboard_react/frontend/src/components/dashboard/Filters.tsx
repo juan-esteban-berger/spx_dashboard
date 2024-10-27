@@ -64,88 +64,100 @@ export const Filters = ({
   };
 
   return (
-    <div className="grid grid-cols-6 gap-4 mb-6">
-      {/* Symbol Filter */}
-      <MultiSelect
-        options={filterOptions.symbols.map(symbol => ({
-          label: symbol,
-          value: symbol
-        }))}
-        selected={selectedSymbols.map(symbol => ({
-          label: symbol,
-          value: symbol
-        }))}
-        onChange={values => setSelectedSymbols(values.map(v => v.value))}
-        placeholder="Select symbols..."
-        className="w-full"
-      />
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6 p-4">
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Symbols</label>
+        <MultiSelect
+          options={filterOptions.symbols.map(symbol => ({
+            label: symbol,
+            value: symbol
+          }))}
+          selected={selectedSymbols.map(symbol => ({
+            label: symbol,
+            value: symbol
+          }))}
+          onChange={values => setSelectedSymbols(values.map(v => v.value))}
+          placeholder="Select symbols..."
+          className="w-full"
+        />
+      </div>
       
-      {/* Sector Filter */}
-      <MultiSelect
-        options={filterOptions.sectors.map(sector => ({
-          label: sector,
-          value: sector
-        }))}
-        selected={selectedSectors.map(sector => ({
-          label: sector,
-          value: sector
-        }))}
-        onChange={values => setSelectedSectors(values.map(v => v.value))}
-        placeholder="Select sectors..."
-        className="w-full"
-      />
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Sectors</label>
+        <MultiSelect
+          options={filterOptions.sectors.map(sector => ({
+            label: sector,
+            value: sector
+          }))}
+          selected={selectedSectors.map(sector => ({
+            label: sector,
+            value: sector
+          }))}
+          onChange={values => setSelectedSectors(values.map(v => v.value))}
+          placeholder="Select sectors..."
+          className="w-full"
+        />
+      </div>
       
-      {/* Sub-Industry Filter */}
-      <MultiSelect
-        options={filterOptions.subIndustries.map(subIndustry => ({
-          label: subIndustry,
-          value: subIndustry
-        }))}
-        selected={selectedSubIndustries.map(subIndustry => ({
-          label: subIndustry,
-          value: subIndustry
-        }))}
-        onChange={values => setSelectedSubIndustries(values.map(v => v.value))}
-        placeholder="Select sub-industries..."
-        className="w-full"
-      />
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Sub-Industries</label>
+        <MultiSelect
+          options={filterOptions.subIndustries.map(subIndustry => ({
+            label: subIndustry,
+            value: subIndustry
+          }))}
+          selected={selectedSubIndustries.map(subIndustry => ({
+            label: subIndustry,
+            value: subIndustry
+          }))}
+          onChange={values => setSelectedSubIndustries(values.map(v => v.value))}
+          placeholder="Select sub-industries..."
+          className="w-full"
+        />
+      </div>
 
-      {/* Location Filter */}
-      <MultiSelect
-        options={filterOptions.locations.map(location => ({
-          label: location,
-          value: location
-        }))}
-        selected={selectedLocations.map(location => ({
-          label: location,
-          value: location
-        }))}
-        onChange={values => setSelectedLocations(values.map(v => v.value))}
-        placeholder="Select locations..."
-        className="w-full"
-      />
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Locations</label>
+        <MultiSelect
+          options={filterOptions.locations.map(location => ({
+            label: location,
+            value: location
+          }))}
+          selected={selectedLocations.map(location => ({
+            label: location,
+            value: location
+          }))}
+          onChange={values => setSelectedLocations(values.map(v => v.value))}
+          placeholder="Select locations..."
+          className="w-full"
+        />
+      </div>
 
-      {/* Min Year Text Input */}
-      <input
-        type="text"
-        placeholder="Min Founded Year..."
-        value={minYearInput}
-        onChange={(e) => setMinYearInput(e.target.value)}
-        onKeyDown={(e) => handleYearKeyPress(e, setMinYear, minYearInput)}
-        onBlur={() => handleYearBlur(minYearInput, setMinYear)}
-        className="rounded-md border border-input px-3 py-2 text-sm w-full"
-      />
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Min Founded Year</label>
+        <input
+          type="text"
+          placeholder="Enter year..."
+          value={minYearInput}
+          onChange={(e) => setMinYearInput(e.target.value)}
+          onKeyDown={(e) => handleYearKeyPress(e, setMinYear, minYearInput)}
+          onBlur={() => handleYearBlur(minYearInput, setMinYear)}
+          className="w-full rounded-md border border-input px-3 py-2 text-sm"
+        />
+      </div>
 
-      {/* Max Year Text Input */}
-      <input
-        type="text"
-        placeholder="Max Founded Year..."
-        value={maxYearInput}
-        onChange={(e) => setMaxYearInput(e.target.value)}
-        onKeyDown={(e) => handleYearKeyPress(e, setMaxYear, maxYearInput)}
-        onBlur={() => handleYearBlur(maxYearInput, setMaxYear)}
-        className="rounded-md border border-input px-3 py-2 text-sm w-full"
-      />
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Max Founded Year</label>
+        <input
+          type="text"
+          placeholder="Enter year..."
+          value={maxYearInput}
+          onChange={(e) => setMaxYearInput(e.target.value)}
+          onKeyDown={(e) => handleYearKeyPress(e, setMaxYear, maxYearInput)}
+          onBlur={() => handleYearBlur(maxYearInput, setMaxYear)}
+          className="w-full rounded-md border border-input px-3 py-2 text-sm"
+        />
+      </div>
     </div>
   );
 };
