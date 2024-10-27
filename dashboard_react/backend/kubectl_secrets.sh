@@ -3,6 +3,8 @@
 pgsql_creds_path="/home/juaneshberger/Credentials/pgcreds.json"
 # Django secret key
 django_secret_key_path="/home/juaneshberger/Credentials/django_secret_key.txt"
+# API token
+api_token_path="/home/juaneshberger/Credentials/spx-django-token.txt"
 
 # Create database secrets
 creds=$(jq -r 'to_entries[] | "\(.key)=\(.value)"' $pgsql_creds_path)
@@ -17,6 +19,11 @@ do
   microk8s kubectl delete secret $secret_name --ignore-not-found
   echo -n $value | microk8s kubectl create secret generic $secret_name --from-literal=$secret_key=$value
 done
+
+# Create API token secret
+api_token=$(cat $api_token_path)
+microk8s kubectl delete secret spx-django-api-token --ignore-not-found
+echo -n $api_token | microk8s kubectl create secret generic spx-django-api-token --from-literal=token=$api_token
 
 # Create Django-specific secrets
 django_secret_key=$(cat $django_secret_key_path)

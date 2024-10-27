@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # Path to secrets
 pg_creds_path="/home/juaneshberger/Credentials/pgcreds.json"
 
@@ -40,5 +39,6 @@ export DJANGO_SECRET_KEY=$django_secret_key
 export DJANGO_DEBUG=True
 export DJANGO_ALLOWED_HOSTS="*"
 
-# API Url
+# API Settings
 export DJANGO_API_URL=$(cat /home/juaneshberger/Credentials/spx-django.txt)
+export VITE_API_TOKEN=$(cat /home/juaneshberger/Credentials/spx-django-token.txt)

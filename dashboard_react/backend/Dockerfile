@@ -18,4 +18,6 @@ COPY . .
 
 EXPOSE 8081
 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8081"]
+CMD python manage.py migrate && \
+    python manage.py init_token && \
+    python manage.py runserver 0.0.0.0:8081

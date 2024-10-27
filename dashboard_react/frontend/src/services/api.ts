@@ -1,5 +1,12 @@
 import { Company, Price, FilterOptions, Financial } from '@/types/interfaces';
 
+// API Configuration using environment variables
+const API_TOKEN = import.meta.env.VITE_API_TOKEN;
+const headers = {
+  'Authorization': `Token ${API_TOKEN}`,
+  'Content-Type': 'application/json',
+};
+
 {/*****************************************************************************/}
 {/* Filter Options API */}
 /**
@@ -7,7 +14,7 @@ import { Company, Price, FilterOptions, Financial } from '@/types/interfaces';
  * Endpoint: GET /api/info/filter_options/
  */
 export const fetchFilterOptions = async (): Promise<FilterOptions> => {
-  const response = await fetch('/api/info/filter_options/');
+  const response = await fetch('/api/info/filter_options/', { headers });
   if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
   return await response.json();
 };
@@ -48,7 +55,7 @@ export const fetchCompanyData = async (
   }
   
   // Fetch and return company data
-  const response = await fetch(url);
+  const response = await fetch(url, { headers });
   if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
   return await response.json();
 };
@@ -64,7 +71,10 @@ export const fetchPriceData = async (symbol: string): Promise<Price[]> => {
   if (!symbol) return [];
 
   // Fetch price data for the symbol
-  const response = await fetch(`/api/prices/?symbols[]=${symbol}&metric=Close`);
+  const response = await fetch(
+    `/api/prices/?symbols[]=${symbol}&metric=Close`,
+    { headers }
+  );
   if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
   return await response.json();
 };
@@ -81,7 +91,10 @@ export const fetchFinancialsData = async (symbol: string): Promise<Financial[]> 
 
   // Fetch financial data for the symbol with custom error handling
   try {
-    const response = await fetch(`/api/financials/?symbols[]=${symbol}`);
+    const response = await fetch(
+      `/api/financials/?symbols[]=${symbol}`,
+      { headers }
+    );
     if (!response.ok) {
       if (response.status === 500) {
         // If we get a 500 error, return an empty array instead of throwing

@@ -142,11 +142,8 @@ const App = () => {
         <AlertDialogContent className="flex flex-col items-center justify-center gap-4 sm:max-w-[425px]">
           <div className="flex items-center gap-4">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <h2 className="text-xl font-semibold">Loading Dashboard Data...</h2>
+            <h2 className="text-xl font-semibold">Loading Historical S&P 500 Data...</h2>
           </div>
-          <p className="text-center text-sm text-muted-foreground">
-            Please wait while we fetch the latest market data.
-          </p>
         </AlertDialogContent>
       </AlertDialog>
 
