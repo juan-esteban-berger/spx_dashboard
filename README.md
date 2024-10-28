@@ -1,6 +1,6 @@
 # S&P 500 Data Engineering Project
 
-This project consists of two data pipelines that scrape S&P 500 company information, stock prices, and quarterly financials from Wikipedia and Yahoo Finance. The data is visualized in two dashboards, one created with Streamlit and the other with Tableau.
+This project consists of two data pipelines that scrape S&P 500 company information, stock prices, and quarterly financials from Wikipedia and Yahoo Finance. The data is visualized in three dashboards: a React/Django dashboard, a Streamlit dashboard, and a Tableau dashboard.
 
 ## Project Structure
 ```
@@ -17,6 +17,11 @@ This project consists of two data pipelines that scrape S&P 500 company informat
 │   └── ...
 ├── 13_source_financials_gdrive
 │   └── ...
+├── dashboard_react
+│   ├── frontend
+│   │   └── ...
+│   └── backend
+│       └── ...
 ├── dashboard_streamlit
 │   └── ...
 ├── dashboard_tableau
@@ -48,9 +53,13 @@ This project consists of two data pipelines that scrape S&P 500 company informat
 
 ![Tableau Dashboard](https://github.com/juan-esteban-berger/spx_dashboard/blob/main/spx-tableau.png)
 
+- **React/Django Dashboard**: A modern, interactive dashboard built with React, TypeScript, and Django REST Framework. Data is served through a REST API backed by PostgreSQL. The live React dashboard can be accessed at [https://www.juanberger.com/spx-react](https://www.juanberger.com/spx-react).
+
+![React Dashboard](https://github.com/juan-esteban-berger/spx_dashboard/blob/main/spx-react.png)
+
 ## Apache Airflow DAGs
 
-- The first DAG scrapes the data and stores it in a PostgreSQL database. The data in PostgreSQL is used to populate the Streamlit dashboard and is found in the `etl_spx_dashboard.py` file. This DAG consists of three Docker operators:
+- The first DAG scrapes the data and stores it in a PostgreSQL database. The data in PostgreSQL is used to populate the React and Streamlit dashboards and is found in the `etl_spx_dashboard.py` file. This DAG consists of three Docker operators:
     - 01_source_info: Scrapes the S&P 500 company information from Wikipedia.
     - 02_source_prices: Scrapes the S&P 500 stock prices from Yahoo Finance.
     - 03_source_financials: Scrapes the S&P 500 quarterly financials from Yahoo Finance.
@@ -109,10 +118,13 @@ tests/
 │   ├── test_etl_spx_dashboard_e2e.py
 │   └── test_etl_spx_dashboard_gdrive_e2e.py
 ├── integration_tests/
+│   ├── test_financials_api.py
 │   ├── test_google_sheet_financials_connection.py
 │   ├── test_google_sheet_info_connection.py
 │   ├── test_google_sheet_prices_connection.py
-│   └── test_postgresql_connection.py
+│   ├── test_info_api.py
+│   ├── test_postgresql_connection.py
+│   └── test_prices_api.py
 └── unit_tests/
     ├── test_fetch_quarterly_financials.py
     ├── test_fetch_quarterly_financials_gdrive.py
@@ -134,7 +146,7 @@ The project includes several bash scripts to manage the build, test, and deploym
 
 1. `001_build_containers.sh`: Builds Docker containers for all the data source components.
 2. `002_run_tests.sh`: Runs the test suite using pytest.
-3. `003_deploy_all.sh`: Deploys both the Streamlit and Tableau dashboards.
+3. `003_deploy_all.sh`: Deploys the React, Streamlit, and Tableau dashboards.
 
 To use these scripts:
 
@@ -150,9 +162,9 @@ To use these scripts:
 ```
 
 ## Deployment
-- The Streamlit dashboard is deployed on a self-managed MicroK8s Kubernetes cluster.
-- A second application that embeds the Tableau dashboard is also deployed on the same cluster.
+- The React/Django dashboard and Streamlit dashboard are deployed on a self-managed MicroK8s Kubernetes cluster.
+- A third application that embeds the Tableau dashboard is also deployed on the same cluster.
 
 Streamlit Dashboard: [https://www.juanberger.com/spx-streamlit](https://www.juanberger.com/spx-streamlit)
-
 Tableau Dashboard: [https://www.juanberger.com/spx-tableau](https://www.juanberger.com/spx-tableau)
+React Dashboard: [https://www.juanberger.com/spx-react](https://www.juanberger.com/spx-react)
